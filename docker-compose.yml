@@ -1,0 +1,61 @@
+services:
+  app-wm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wm-app
+    container_name: app-wm
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./app-volume-wm:/var/www/html
+    networks:
+      - wm_network
+
+  nginx-wm:
+    image: nginx:latest
+    container_name: nginx-wm
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./app-volume-wm:/var/www/html
+      - ./nginx-volume-wm/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app-wm
+    networks:
+      - wm_network
+
+  mariadb-wm:
+    image: mariadb:lts
+    container_name: mariadb-wm
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    env_file:
+      - .env
+    ports:
+      - "${MARIADB_PORT}:3306"
+    volumes:
+      - ./mariadb-volume-wm:/var/lib/mysql
+    networks:
+      - wm_network
+
+  app-docker-gam:
+      build:
+        context: ./app-docker-gam
+        dockerfile: Dockerfile
+      image: docker-gam-app
+      container_name: app-docker-gam
+      restart: unless-stopped
+      volumes:
+        - ./app-docker-gam:/home/gam
+      networks:
+        - wm_network
+
+networks:
+  wm_network:
+    driver: bridge

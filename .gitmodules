@@ -1,0 +1,3 @@
+[submodule "app-docker-gam"]
+	path = app-docker-gam
+	url = https://github.com/olkitu/docker-gam
