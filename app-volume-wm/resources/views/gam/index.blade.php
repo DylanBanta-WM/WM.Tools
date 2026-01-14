@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Create Student Email') }}
+            {{ __('Create Student Credentials') }}
         </h2>
     </x-slot>
 
@@ -13,7 +13,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="student-email-creator">
-                        <h3 class="text-lg font-medium mb-4">Generate a unique student email address</h3>
+                        <h3 class="text-lg font-medium mb-4">Generate unique student credentials</h3>
 
                         <form id="student-form" class="space-y-4">
                             @csrf
@@ -68,7 +68,7 @@
                                 id="generate-button"
                                 class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Generate Email
+                                Generate Credentials
                             </button>
                         </form>
 
@@ -76,26 +76,50 @@
                             <div id="result-content" class="p-4 rounded-lg"></div>
                         </div>
 
-                        <div id="email-display" class="mt-6 hidden">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Generated Email
-                            </label>
-                            <div class="flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    id="generated-email"
-                                    readonly
-                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 font-mono"
-                                />
-                                <button
-                                    type="button"
-                                    id="copy-button"
-                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
-                                >
-                                    Copy
-                                </button>
+                        <div id="email-display" class="mt-6 hidden space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Generated Email
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        id="generated-email"
+                                        readonly
+                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 font-mono"
+                                    />
+                                    <button
+                                        type="button"
+                                        id="copy-email-button"
+                                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
+                                    >
+                                        Copy
+                                    </button>
+                                </div>
+                                <p id="copy-email-feedback" class="mt-2 text-sm text-green-600 hidden">Copied to clipboard!</p>
                             </div>
-                            <p id="copy-feedback" class="mt-2 text-sm text-green-600 hidden">Copied to clipboard!</p>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Generated Password
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        id="generated-password"
+                                        readonly
+                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 font-mono"
+                                    />
+                                    <button
+                                        type="button"
+                                        id="copy-password-button"
+                                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
+                                    >
+                                        Copy
+                                    </button>
+                                </div>
+                                <p id="copy-password-feedback" class="mt-2 text-sm text-green-600 hidden">Copied to clipboard!</p>
+                            </div>
                         </div>
                     </div>
                 </div>

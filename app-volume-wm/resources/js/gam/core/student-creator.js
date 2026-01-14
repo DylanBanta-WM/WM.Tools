@@ -12,8 +12,11 @@ export class StudentCreator {
         this.resultContent = document.getElementById('result-content');
         this.emailDisplay = document.getElementById('email-display');
         this.generatedEmailInput = document.getElementById('generated-email');
-        this.copyButton = document.getElementById('copy-button');
-        this.copyFeedback = document.getElementById('copy-feedback');
+        this.copyEmailButton = document.getElementById('copy-email-button');
+        this.copyEmailFeedback = document.getElementById('copy-email-feedback');
+        this.generatedPasswordInput = document.getElementById('generated-password');
+        this.copyPasswordButton = document.getElementById('copy-password-button');
+        this.copyPasswordFeedback = document.getElementById('copy-password-feedback');
 
         this.init();
     }
@@ -25,7 +28,8 @@ export class StudentCreator {
         }
 
         this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-        this.copyButton.addEventListener('click', () => this.copyToClipboard());
+        this.copyEmailButton.addEventListener('click', () => this.copyToClipboard('email'));
+        this.copyPasswordButton.addEventListener('click', () => this.copyToClipboard('password'));
     }
 
     calculateGradYear(curGrade) {
@@ -39,6 +43,17 @@ export class StudentCreator {
         const firstInitial = firstName.charAt(0).toLowerCase();
         const lastNameFormatted = lastName.charAt(0).toLowerCase() + lastName.slice(1).toLowerCase();
         return `wm${gradYearShort}${firstInitial}${lastNameFormatted}`;
+    }
+
+    generatePassword(firstName, lastName) {
+        const randBetween = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        const part1 = lastName.substring(0, randBetween(2, 4));
+        const part2 = firstName.substring(0, randBetween(2, 4));
+        const part3 = randBetween(11111, 99999);
+
+        const combined = part1 + part2 + part3;
+        return combined.substring(0, 10);
     }
 
     async checkEmailExists(email) {
@@ -100,9 +115,10 @@ export class StudentCreator {
         try {
             const baseEmail = this.generateBaseEmail(firstName, lastName, grade);
             const uniqueEmail = await this.findUniqueEmail(baseEmail);
+            const password = this.generatePassword(firstName, lastName);
 
-            this.showResult('success', 'Email generated successfully');
-            this.displayEmail(uniqueEmail);
+            this.showResult('success', 'Credentials generated successfully');
+            this.displayCredentials(uniqueEmail, password);
 
         } catch (error) {
             console.error('Error generating email:', error);
@@ -130,29 +146,34 @@ export class StudentCreator {
         }
     }
 
-    displayEmail(email) {
+    displayCredentials(email, password) {
         this.emailDisplay.classList.remove('hidden');
         this.generatedEmailInput.value = email;
-        this.copyFeedback.classList.add('hidden');
+        this.generatedPasswordInput.value = password;
+        this.copyEmailFeedback.classList.add('hidden');
+        this.copyPasswordFeedback.classList.add('hidden');
     }
 
-    async copyToClipboard() {
-        const email = this.generatedEmailInput.value;
-        if (!email) return;
+    async copyToClipboard(type) {
+        const input = type === 'email' ? this.generatedEmailInput : this.generatedPasswordInput;
+        const feedback = type === 'email' ? this.copyEmailFeedback : this.copyPasswordFeedback;
+        const value = input.value;
+
+        if (!value) return;
 
         try {
-            await navigator.clipboard.writeText(email);
-            this.copyFeedback.classList.remove('hidden');
+            await navigator.clipboard.writeText(value);
+            feedback.classList.remove('hidden');
             setTimeout(() => {
-                this.copyFeedback.classList.add('hidden');
+                feedback.classList.add('hidden');
             }, 2000);
         } catch (error) {
             console.error('Failed to copy:', error);
-            this.generatedEmailInput.select();
+            input.select();
             document.execCommand('copy');
-            this.copyFeedback.classList.remove('hidden');
+            feedback.classList.remove('hidden');
             setTimeout(() => {
-                this.copyFeedback.classList.add('hidden');
+                feedback.classList.add('hidden');
             }, 2000);
         }
     }
