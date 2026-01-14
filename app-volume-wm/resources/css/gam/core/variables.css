@@ -1,0 +1,48 @@
+/* GAM Email Checker Variables */
+
+:root {
+  /* Result colors */
+  --gam-success-bg: #dcfce7;
+  --gam-success-border: #86efac;
+  --gam-success-text: #166534;
+  
+  --gam-error-bg: #fee2e2;
+  --gam-error-border: #fca5a5;
+  --gam-error-text: #991b1b;
+  
+  /* Loading state */
+  --gam-loading-bg: #e0e7ff;
+  --gam-loading-border: #a5b4fc;
+  --gam-loading-text: #3730a3;
+}
+
+/* Dark mode variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gam-success-bg: #14532d;
+    --gam-success-border: #166534;
+    --gam-success-text: #86efac;
+    
+    --gam-error-bg: #7f1d1d;
+    --gam-error-border: #991b1b;
+    --gam-error-text: #fca5a5;
+    
+    --gam-loading-bg: #312e81;
+    --gam-loading-border: #3730a3;
+    --gam-loading-text: #a5b4fc;
+  }
+}
+
+.dark {
+  --gam-success-bg: #14532d;
+  --gam-success-border: #166534;
+  --gam-success-text: #86efac;
+  
+  --gam-error-bg: #7f1d1d;
+  --gam-error-border: #991b1b;
+  --gam-error-text: #fca5a5;
+  
+  --gam-loading-bg: #312e81;
+  --gam-loading-border: #3730a3;
+  --gam-loading-text: #a5b4fc;
+}

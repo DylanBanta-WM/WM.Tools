@@ -1,0 +1,7 @@
+/* resources/css/gam-css-loader.css */
+
+/* === Core Variables (Must be first) === */
+@import './gam/core/variables.css';
+
+/* === Components (Specific UI elements) === */
+@import './gam/components/results.css';

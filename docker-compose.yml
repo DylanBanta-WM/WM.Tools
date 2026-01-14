@@ -9,6 +9,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./app-volume-wm:/var/www/html
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - wm_network
 
@@ -52,7 +53,7 @@ services:
       container_name: app-docker-gam
       restart: unless-stopped
       volumes:
-        - ./app-docker-gam:/home/gam
+        - ./app-volume-gam:/home/gam
       networks:
         - wm_network
 
