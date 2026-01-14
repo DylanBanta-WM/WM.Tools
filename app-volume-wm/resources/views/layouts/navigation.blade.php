@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('gam.newStudent')" :active="request()->routeIs('gam.newStudent')">
                         {{ __('New Student') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('gam.chromebookLookup')" :active="request()->routeIs('gam.chromebookLookup')">
+                        {{ __('Chromebook Lookup') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -77,6 +80,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('gam.newStudent')" :active="request()->routeIs('gam.newStudent')">
                 {{ __('New Student') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('gam.chromebookLookup')" :active="request()->routeIs('gam.chromebookLookup')">
+                {{ __('Chromebook Lookup') }}
             </x-responsive-nav-link>
         </div>
 

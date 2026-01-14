@@ -109,4 +109,36 @@ class GamService
     {
         return $this->execute(['info', 'user', $email]);
     }
+
+    /**
+     * Get recent users of a Chromebook by serial number
+     *
+     * @param string $serialNumber The Chromebook serial number
+     * @param int $limit Number of recent users to return (1-10)
+     * @return array
+     */
+    public function getChromebookRecentUsers(string $serialNumber, int $limit = 1): array
+    {
+        $limit = max(1, min(10, $limit));
+        return $this->execute([
+            'info', 'cros', 'cros_sn', $serialNumber,
+            'recentusers', 'listlimit', (string)$limit
+        ]);
+    }
+
+    /**
+     * Get Chromebooks recently used by a specific user email
+     *
+     * @param string $email The user's email address
+     * @param int $limit Number of recent users per device to return (1-10)
+     * @return array
+     */
+    public function getChromebooksByUser(string $email, int $limit = 1): array
+    {
+        $limit = max(1, min(10, $limit));
+        return $this->execute([
+            'config', 'csv_output_row_filter', "recentUsers.email:regex:{$email}",
+            'print', 'cros', 'serialnumber', 'recentusers', 'listlimit', (string)$limit
+        ]);
+    }
 }
