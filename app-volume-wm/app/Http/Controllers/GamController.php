@@ -3,16 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Services\GamService;
+use App\Services\ChromebookCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class GamController extends Controller
 {
     private GamService $gamService;
+    private ChromebookCacheService $cacheService;
 
-    public function __construct(GamService $gamService)
+    public function __construct(GamService $gamService, ChromebookCacheService $cacheService)
     {
         $this->gamService = $gamService;
+        $this->cacheService = $cacheService;
     }
 
     /**
@@ -56,7 +59,7 @@ class GamController extends Controller
     }
 
     /**
-     * Look up recent users of a Chromebook by serial number
+     * Look up recent users of a Chromebook by serial number (CACHED)
      *
      * POST /api/gam/chromebook-by-serial
      * Body: { "serial_number": "ABC123", "limit": 5 }
@@ -69,18 +72,31 @@ class GamController extends Controller
         ]);
 
         $limit = $validated['limit'] ?? 1;
-        $result = $this->gamService->getChromebookRecentUsers($validated['serial_number'], $limit);
+        $results = $this->cacheService->findBySerial($validated['serial_number'], $limit);
+
+        if ($results->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'serial_number' => $validated['serial_number'],
+                'message' => 'No cached data found for this serial number',
+                'data' => []
+            ]);
+        }
 
         return response()->json([
-            'success' => $result['success'],
+            'success' => true,
             'serial_number' => $validated['serial_number'],
-            'output' => $result['output'],
-            'error' => $result['error']
+            'data' => $results->map(fn($r) => [
+                'email' => $r->user_email,
+                'asset_id' => $r->asset_id,
+                'recorded_at' => $r->recorded_at->toIso8601String(),
+                'recorded_at_human' => $r->recorded_at->diffForHumans(),
+            ])
         ]);
     }
 
     /**
-     * Look up Chromebooks recently used by a student email
+     * Look up Chromebooks recently used by a student email (CACHED)
      *
      * POST /api/gam/chromebook-by-user
      * Body: { "email": "student@domain.com", "limit": 5 }
@@ -93,13 +109,63 @@ class GamController extends Controller
         ]);
 
         $limit = $validated['limit'] ?? 1;
-        $result = $this->gamService->getChromebooksByUser($validated['email'], $limit);
+        $results = $this->cacheService->findByUser($validated['email'], $limit);
+
+        if ($results->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'email' => $validated['email'],
+                'message' => 'No cached data found for this user',
+                'data' => []
+            ]);
+        }
 
         return response()->json([
-            'success' => $result['success'],
+            'success' => true,
             'email' => $validated['email'],
-            'output' => $result['output'],
-            'error' => $result['error']
+            'data' => $results->map(fn($r) => [
+                'serial_number' => $r->serial_number,
+                'asset_id' => $r->asset_id,
+                'recorded_at' => $r->recorded_at->toIso8601String(),
+                'recorded_at_human' => $r->recorded_at->diffForHumans(),
+            ])
+        ]);
+    }
+
+    /**
+     * Look up recent users of a Chromebook by asset ID (CACHED)
+     *
+     * POST /api/gam/chromebook-by-asset
+     * Body: { "asset_id": "12345", "limit": 5 }
+     */
+    public function chromebookByAsset(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'asset_id' => 'required|string|max:100',
+            'limit' => 'integer|min:1|max:10'
+        ]);
+
+        $limit = $validated['limit'] ?? 1;
+        $results = $this->cacheService->findByAssetId($validated['asset_id'], $limit);
+
+        if ($results->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'asset_id' => $validated['asset_id'],
+                'message' => 'No cached data found for this asset ID',
+                'data' => []
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'asset_id' => $validated['asset_id'],
+            'data' => $results->map(fn($r) => [
+                'email' => $r->user_email,
+                'serial_number' => $r->serial_number,
+                'recorded_at' => $r->recorded_at->toIso8601String(),
+                'recorded_at_human' => $r->recorded_at->diffForHumans(),
+            ])
         ]);
     }
 }

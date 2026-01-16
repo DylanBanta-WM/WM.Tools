@@ -4,11 +4,7 @@
 export class ChromebookLookup {
     constructor() {
         this.form = document.getElementById('chromebook-form');
-        this.searchModeRadios = document.querySelectorAll('input[name="searchMode"]');
-        this.serialInputGroup = document.getElementById('serial-input-group');
-        this.userInputGroup = document.getElementById('user-input-group');
-        this.serialNumberInput = document.getElementById('serialNumber');
-        this.userEmailInput = document.getElementById('userEmail');
+        this.searchInput = document.getElementById('searchQuery');
         this.resultLimitSlider = document.getElementById('resultLimit');
         this.limitValueDisplay = document.getElementById('limitValue');
         this.searchButton = document.getElementById('search-button');
@@ -16,7 +12,6 @@ export class ChromebookLookup {
         this.loadingMessage = document.getElementById('loading-message');
         this.resultsHistory = document.getElementById('results-history');
 
-        this.currentMode = 'serial';
         this.init();
     }
 
@@ -25,11 +20,6 @@ export class ChromebookLookup {
             console.error('Chromebook lookup form not found');
             return;
         }
-
-        // Handle search mode toggle
-        this.searchModeRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => this.handleModeChange(e));
-        });
 
         // Handle slider change
         this.resultLimitSlider.addEventListener('input', (e) => {
@@ -40,78 +30,89 @@ export class ChromebookLookup {
         this.form.addEventListener('submit', (e) => this.handleSubmit(e));
     }
 
-    handleModeChange(e) {
-        this.currentMode = e.target.value;
-
-        if (this.currentMode === 'serial') {
-            this.serialInputGroup.classList.remove('hidden');
-            this.userInputGroup.classList.add('hidden');
-        } else {
-            this.serialInputGroup.classList.add('hidden');
-            this.userInputGroup.classList.remove('hidden');
+    /**
+     * Detect the type of search query
+     * @param {string} query
+     * @returns {'email'|'serial_or_asset'}
+     */
+    detectQueryType(query) {
+        if (query.includes('@')) {
+            return 'email';
         }
+        return 'serial_or_asset';
     }
 
     async handleSubmit(e) {
         e.preventDefault();
 
+        const query = this.searchInput.value.trim();
         const limit = parseInt(this.resultLimitSlider.value, 10);
 
-        if (this.currentMode === 'serial') {
-            const serialNumber = this.serialNumberInput.value.trim();
-            if (!serialNumber) {
-                this.addErrorResult('Please enter a serial number');
-                return;
-            }
-            await this.searchBySerial(serialNumber, limit);
+        if (!query) {
+            this.addErrorResult('Please enter a serial number, asset ID, or email');
+            return;
+        }
+
+        const queryType = this.detectQueryType(query);
+
+        if (queryType === 'email') {
+            await this.searchByUser(query, limit);
         } else {
-            const email = this.userEmailInput.value.trim();
-            if (!email) {
-                this.addErrorResult('Please enter an email address');
-                return;
-            }
-            await this.searchByUser(email, limit);
+            // Try serial and asset searches
+            await this.searchBySerialOrAsset(query, limit);
         }
     }
 
-    async searchBySerial(serialNumber, limit) {
-        this.showLoading(`Searching for users of ${serialNumber}...`);
+    async searchBySerialOrAsset(query, limit) {
+        this.showLoading(`Searching for ${query}...`);
 
         try {
-            const response = await fetch('/api/gam/chromebook-by-serial', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': this.getCsrfToken()
-                },
-                body: JSON.stringify({ serial_number: serialNumber, limit })
-            });
+            // Try both serial and asset searches in parallel
+            const [serialResponse, assetResponse] = await Promise.all([
+                fetch('/api/gam/chromebook-by-serial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({ serial_number: query, limit })
+                }),
+                fetch('/api/gam/chromebook-by-asset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({ asset_id: query, limit })
+                })
+            ]);
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
+            const serialData = await serialResponse.json();
+            const assetData = await assetResponse.json();
+
+            const hasSerialResults = serialData.success && serialData.data && serialData.data.length > 0;
+            const hasAssetResults = assetData.success && assetData.data && assetData.data.length > 0;
+
+            if (hasSerialResults) {
+                this.addSerialResult(query, serialData.data);
             }
-
-            const data = await response.json();
-
-            if (data.success) {
-                const users = this.parseSerialOutput(data.output);
-                if (users.length > 0) {
-                    this.addSerialResult(serialNumber, users);
-                } else {
-                    this.addErrorResult(`No recent users found for Chromebook: ${serialNumber}`);
-                }
-            } else {
-                this.addErrorResult(`Chromebook not found: ${serialNumber}`);
+            if (hasAssetResults) {
+                this.addAssetResult(query, assetData.data);
+            }
+            if (!hasSerialResults && !hasAssetResults) {
+                this.addErrorResult(`No cached data found for: ${query}`);
             }
 
         } catch (error) {
-            console.error('Error searching by serial:', error);
-            this.addErrorResult('Error searching for Chromebook. Please try again.');
+            console.error('Error searching:', error);
+            this.addErrorResult('Error searching. Please try again.');
         } finally {
             this.hideLoading();
         }
     }
+
 
     async searchByUser(email, limit) {
         this.showLoading(`Searching for Chromebooks used by ${email}...`);
@@ -133,15 +134,10 @@ export class ChromebookLookup {
 
             const data = await response.json();
 
-            if (data.success) {
-                const chromebooks = this.parseUserOutput(data.output, limit);
-                if (chromebooks.length > 0) {
-                    this.addUserResult(email, chromebooks);
-                } else {
-                    this.addErrorResult(`No Chromebooks found for user: ${email}`);
-                }
+            if (data.success && data.data && data.data.length > 0) {
+                this.addUserResult(email, data.data);
             } else {
-                this.addErrorResult(`No Chromebooks found for user: ${email}`);
+                this.addErrorResult(data.message || `No cached data found for user: ${email}`);
             }
 
         } catch (error) {
@@ -151,6 +147,7 @@ export class ChromebookLookup {
             this.hideLoading();
         }
     }
+
 
     addSerialResult(serialNumber, users) {
         const card = document.createElement('div');
@@ -175,7 +172,7 @@ export class ChromebookLookup {
         list.className = 'space-y-2';
 
         users.forEach((user, index) => {
-            const row = this.createResultRow(index + 1, user.email);
+            const row = this.createResultRowWithTimestamp(index + 1, user.email, user.recorded_at, user.recorded_at_human);
             list.appendChild(row);
         });
 
@@ -206,7 +203,38 @@ export class ChromebookLookup {
         list.className = 'space-y-2';
 
         chromebooks.forEach((chromebook, index) => {
-            const row = this.createResultRow(index + 1, chromebook.serialNumber);
+            const row = this.createResultRowWithTimestamp(index + 1, chromebook.serial_number, chromebook.recorded_at, chromebook.recorded_at_human);
+            list.appendChild(row);
+        });
+
+        card.appendChild(list);
+        this.resultsHistory.prepend(card);
+    }
+
+    addAssetResult(assetId, users) {
+        const card = document.createElement('div');
+        card.className = 'p-4 border border-green-300 bg-green-50 rounded-lg';
+
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between mb-3';
+
+        const title = document.createElement('h4');
+        title.className = 'font-medium text-green-800';
+        title.innerHTML = `Recent users of asset <span class="font-mono">${assetId}</span>`;
+
+        const timestamp = document.createElement('span');
+        timestamp.className = 'text-xs text-green-600';
+        timestamp.textContent = new Date().toLocaleTimeString();
+
+        header.appendChild(title);
+        header.appendChild(timestamp);
+        card.appendChild(header);
+
+        const list = document.createElement('div');
+        list.className = 'space-y-2';
+
+        users.forEach((user, index) => {
+            const row = this.createResultRowWithTimestamp(index + 1, user.email, user.recorded_at, user.recorded_at_human);
             list.appendChild(row);
         });
 
@@ -259,6 +287,52 @@ export class ChromebookLookup {
         div.appendChild(copyButton);
 
         return div;
+    }
+
+    createResultRowWithTimestamp(index, value, rawTimestamp, humanTimestamp) {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white';
+
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'text-sm text-gray-500 font-medium';
+        numberSpan.textContent = `${index}.`;
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'flex-1 text-gray-900 font-mono';
+        valueSpan.textContent = value;
+
+        const timestampWrapper = document.createElement('span');
+        timestampWrapper.className = 'text-xs text-gray-500 text-right';
+
+        // Format raw timestamp nicely
+        const formattedDate = this.formatTimestamp(rawTimestamp);
+        timestampWrapper.innerHTML = `${formattedDate}<br><span class="text-gray-400">(${humanTimestamp})</span>`;
+
+        const copyButton = document.createElement('button');
+        copyButton.type = 'button';
+        copyButton.className = 'px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition-colors duration-200';
+        copyButton.textContent = 'Copy';
+        copyButton.addEventListener('click', () => this.copyToClipboard(value, copyButton));
+
+        div.appendChild(numberSpan);
+        div.appendChild(valueSpan);
+        div.appendChild(timestampWrapper);
+        div.appendChild(copyButton);
+
+        return div;
+    }
+
+    formatTimestamp(timestamp) {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
     }
 
     parseSerialOutput(output) {

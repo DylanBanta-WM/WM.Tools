@@ -141,4 +141,53 @@ class GamService
             'print', 'cros', 'serialnumber', 'recentusers', 'listlimit', (string)$limit
         ]);
     }
+
+    /**
+     * Get all chromebooks with serial number and asset ID
+     * Used for daily inventory sync
+     *
+     * @param int|null $timeout Extended timeout for large datasets (default 300s)
+     * @return array
+     */
+    public function getAllChromebooks(?int $timeout = 300): array
+    {
+        return $this->execute([
+            'config', 'csv_output_header_filter', 'serialNumber,annotatedAssetId',
+            'print', 'cros', 'fields', 'serialnumber,annotatedAssetId'
+        ], $timeout);
+    }
+
+    /**
+     * Get the most recent user for a single chromebook by serial
+     *
+     * @param string $serialNumber The Chromebook serial number
+     * @return array
+     */
+    public function getChromebookLastUser(string $serialNumber): array
+    {
+        return $this->execute([
+            'info', 'cros', 'cros_sn', $serialNumber,
+            'recentusers', 'listlimit', '1'
+        ]);
+    }
+
+    /**
+     * Get chromebooks from specific OUs with serial and asset ID
+     * Used for OU-specific usage updates
+     *
+     * @param array $ous Array of OU paths (e.g., ['/Devices/ES', '/Students/ES'])
+     * @param int|null $timeout Extended timeout for large datasets (default 300s)
+     * @return array
+     */
+    public function getChromebooksByOUs(array $ous, ?int $timeout = 300): array
+    {
+        $args = [
+            'config', 'csv_output_header_filter', 'serialNumber,annotatedAssetId',
+            'print', 'cros',
+            'cros_ous_and_children', implode(',', $ous),
+            'fields', 'serialnumber,annotatedAssetId'
+        ];
+
+        return $this->execute($args, $timeout);
+    }
 }

@@ -28,47 +28,13 @@
                         <form id="chromebook-form">
                             @csrf
                             <div class="flex flex-wrap items-end gap-3">
-                                <!-- Search Mode Toggle -->
-                                <div class="flex gap-3">
-                                    <label class="flex items-center cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="searchMode"
-                                            value="serial"
-                                            checked
-                                            class="mr-1.5 text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <span class="text-sm">Serial</span>
-                                    </label>
-                                    <label class="flex items-center cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="searchMode"
-                                            value="user"
-                                            class="mr-1.5 text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <span class="text-sm">Email</span>
-                                    </label>
-                                </div>
-
-                                <!-- Serial Number Input -->
-                                <div id="serial-input-group" class="flex-1 min-w-[200px]">
+                                <!-- Single Search Input -->
+                                <div class="flex-1 min-w-[250px]">
                                     <input
                                         type="text"
-                                        id="serialNumber"
-                                        name="serialNumber"
-                                        placeholder="Serial number"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    />
-                                </div>
-
-                                <!-- User Email Input (hidden by default) -->
-                                <div id="user-input-group" class="hidden flex-1 min-w-[200px]">
-                                    <input
-                                        type="email"
-                                        id="userEmail"
-                                        name="userEmail"
-                                        placeholder="Student email"
+                                        id="searchQuery"
+                                        name="searchQuery"
+                                        placeholder="Serial number, Asset ID, or Email"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                     />
                                 </div>
