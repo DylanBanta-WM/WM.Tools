@@ -1,6 +1,6 @@
 .env
-/mariadb-volume-wm
-/app-volume-gam
+/Volumes
 StyleGuide.MD
 GEMINI.md
 CLAUDE.md
+/.claude

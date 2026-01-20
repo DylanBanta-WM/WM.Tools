@@ -1,14 +1,14 @@
 services:
   app-wm:
     build:
-      context: .
+      context: ./Context/Laravel
       dockerfile: Dockerfile
     image: wm-app
     container_name: app-wm
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
-      - ./app-volume-wm:/var/www/html
+      - ./Volumes/Laravel:/var/www/html
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - wm_network
@@ -20,8 +20,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./app-volume-wm:/var/www/html
-      - ./nginx-volume-wm/default.conf:/etc/nginx/conf.d/default.conf
+      - ./Volumes/Laravel:/var/www/html
+      - ./Volumes/Nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app-wm
     networks:
@@ -41,19 +41,19 @@ services:
     ports:
       - "${MARIADB_PORT}:3306"
     volumes:
-      - ./mariadb-volume-wm:/var/lib/mysql
+      - ./Volumes/Mariadb:/var/lib/mysql
     networks:
       - wm_network
 
   app-docker-gam:
       build:
-        context: ./app-docker-gam
+        context: ./Context/GAM
         dockerfile: Dockerfile
       image: docker-gam-app
       container_name: app-docker-gam
       restart: unless-stopped
       volumes:
-        - ./app-volume-gam:/home/gam
+        - ./Volumes/GAM:/home/gam
       networks:
         - wm_network
 

@@ -22,6 +22,9 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
     sh get-docker.sh && \
     rm get-docker.sh
 
+# Add www-data to docker group (GID 987 to match host)
+RUN groupmod -g 987 docker && usermod -aG docker www-data
+
 # Install PHP extensions required by Laravel
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
