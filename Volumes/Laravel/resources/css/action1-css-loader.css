@@ -1,0 +1,7 @@
+/* resources/css/action1-css-loader.css */
+
+/* === Core Variables (Must be first) === */
+@import './action1/core/variables.css';
+
+/* === Components === */
+@import './action1/components/tabs.css';

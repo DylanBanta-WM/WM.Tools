@@ -1,0 +1,87 @@
+/* Action1 Tab Styles */
+.action1-tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--action1-tab-inactive);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.action1-tab:hover {
+    color: var(--action1-tab-active);
+}
+
+.action1-tab.active {
+    color: var(--action1-tab-active);
+    border-bottom-color: var(--action1-tab-active);
+}
+
+.action1-tab-content {
+    padding-top: 1rem;
+}
+
+/* Action1 Button Styles */
+.action1-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+    background-color: var(--action1-primary);
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.action1-btn:hover {
+    background-color: var(--action1-primary-hover);
+}
+
+.action1-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Auth Status Styles */
+#auth-status.success {
+    color: var(--action1-success-text);
+}
+
+#auth-status.error {
+    color: var(--action1-error-text);
+}
+
+/* Results Table Styles */
+.action1-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.action1-table th,
+.action1-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .action1-table th,
+.dark .action1-table td {
+    border-bottom-color: #374151;
+}
+
+.action1-table th {
+    font-weight: 600;
+    background-color: #f9fafb;
+}
+
+.dark .action1-table th {
+    background-color: #1f2937;
+}
+
+.action1-table tr:hover td {
+    background-color: #f3f4f6;
+}
+
+.dark .action1-table tr:hover td {
+    background-color: #374151;
+}

@@ -1,5 +1,7 @@
 .env
-/Volumes
+/Volumes/GAM
+/Volumes/Mariadb
+/Volumes/Nginx
 StyleGuide.MD
 GEMINI.md
 CLAUDE.md

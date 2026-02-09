@@ -1,0 +1,42 @@
+/* Action1 CSS Variables */
+:root {
+    --action1-primary: #2563eb;
+    --action1-primary-hover: #1d4ed8;
+    --action1-success-bg: #dcfce7;
+    --action1-success-text: #166534;
+    --action1-success-border: #86efac;
+    --action1-error-bg: #fef2f2;
+    --action1-error-text: #991b1b;
+    --action1-error-border: #fecaca;
+    --action1-warning-bg: #fffbeb;
+    --action1-warning-text: #92400e;
+    --action1-warning-border: #fde68a;
+    --action1-tab-active: #2563eb;
+    --action1-tab-inactive: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --action1-success-bg: #14532d;
+        --action1-success-text: #86efac;
+        --action1-success-border: #166534;
+        --action1-error-bg: #450a0a;
+        --action1-error-text: #fecaca;
+        --action1-error-border: #991b1b;
+        --action1-warning-bg: #451a03;
+        --action1-warning-text: #fde68a;
+        --action1-warning-border: #92400e;
+    }
+}
+
+.dark {
+    --action1-success-bg: #14532d;
+    --action1-success-text: #86efac;
+    --action1-success-border: #166534;
+    --action1-error-bg: #450a0a;
+    --action1-error-text: #fecaca;
+    --action1-error-border: #991b1b;
+    --action1-warning-bg: #451a03;
+    --action1-warning-text: #fde68a;
+    --action1-warning-border: #92400e;
+}
